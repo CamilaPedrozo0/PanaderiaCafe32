@@ -77,15 +77,6 @@ CUSTOM_CSS = """
         font-weight: 600;
     }
 
-    .custom-card {
-        background: white;
-        border-radius: 12px;
-        padding: 20px;
-        border: 1px solid var(--border-color);
-        box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-        margin-bottom: 20px;
-    }
-
     .stButton>button {
         background-color: var(--verde-cafe) !important;
         color: white !important;
@@ -163,25 +154,20 @@ def init_db():
     c.execute("SELECT COUNT(*) FROM catalogo")
     if c.fetchone()[0] == 0:
         items = [
-            # Panificación por Kg
             ("Panificación", "Pan", "Kg"), ("Panificación", "Galleta", "Kg"),
             ("Panificación", "Criollos", "Kg"), ("Panificación", "Chipá", "Kg"),
             ("Panificación", "Cuernitos", "Kg"), ("Panificación", "Bizcochitos", "Kg"),
-            # Panificación por Unidad
             ("Panificación", "Pan de molde blanco", "Unidad"), ("Panificación", "Pan de molde con semillas", "Unidad"),
             ("Panificación", "Pinchadas", "Unidad"), ("Panificación", "Pan arabe x4", "Unidad"),
             ("Panificación", "Pan pebete x4", "Unidad"), ("Panificación", "Pan de hamburguesa x2", "Unidad"),
             ("Panificación", "Pan de lomita x2", "Unidad"),
-            # Especiales
             ("Especiales", "Prepizza", "Unidad"), ("Especiales", "Pizzetta", "Unidad"),
             ("Especiales", "Pebete relleno", "Unidad"), ("Especiales", "Arabe relleno", "Unidad"),
             ("Especiales", "Medialuna xl", "Unidad"), ("Especiales", "Medialuna xl rellena", "Unidad"),
             ("Especiales", "Sandwich de miga comun", "Unidad"), ("Especiales", "Sandwich de miga especial", "Unidad"),
             ("Especiales", "Sandwich de miga con pollo", "Unidad"), ("Especiales", "Panes de molde", "Unidad"),
-            # Cuartos
             ("Cuartos", "Grisines", "Unidad"), ("Cuartos", "Palmeras", "Unidad"),
             ("Cuartos", "Pepas", "Unidad"), ("Cuartos", "Fosforitos", "Unidad"), ("Cuartos", "Primaveras", "Unidad"),
-            # Individuales
             ("Individuales", "Cookies classics", "Unidad"), ("Individuales", "Cookies de doble chocolate", "Unidad"),
             ("Individuales", "Cookies black", "Unidad"), ("Individuales", "Cookies oreo", "Unidad"),
             ("Individuales", "Cookies red velvet", "Unidad"), ("Individuales", "Muffins de arandanos", "Unidad"),
@@ -190,13 +176,11 @@ def init_db():
             ("Individuales", "Alfajores de cafe", "Unidad"), ("Individuales", "Alfajores de maicena", "Unidad"),
             ("Individuales", "Alfajores brownie", "Unidad"), ("Individuales", "Alfajores de coco", "Unidad"),
             ("Individuales", "Brownies", "Unidad"), ("Individuales", "Lemons", "Unidad"), ("Individuales", "Boudin del dia", "Unidad"),
-            # Facturas
             ("Facturas", "Medialunas de manteca", "Unidad"), ("Facturas", "Medialunas de grasa", "Unidad"),
             ("Facturas", "Surtidas de manteca", "Unidad"), ("Facturas", "Surtidas de grasa", "Unidad"),
             ("Facturas", "Churrines-vigilantes", "Unidad"), ("Facturas", "Hojaldres", "Unidad"),
             ("Facturas", "Pan de leche", "Unidad"), ("Facturas", "Tortillas negras", "Unidad"),
             ("Facturas", "Rolls de canela", "Unidad"), ("Facturas", "Donas simples", "Unidad"), ("Facturas", "Donas rellenas", "Unidad"),
-            # Porciones de Torta
             ("Porciones de Torta", "Chocotorta", "Unidad"), ("Porciones de Torta", "Torta vasca", "Unidad"),
             ("Porciones de Torta", "Key lime pie", "Unidad"), ("Porciones de Torta", "Tiramisu", "Unidad"),
             ("Porciones de Torta", "Cheesecake", "Unidad"), ("Porciones de Torta", "Matilda", "Unidad"),
@@ -204,14 +188,12 @@ def init_db():
             ("Porciones de Torta", "Lemon pie", "Unidad"), ("Porciones de Torta", "Tarta de frutillas", "Unidad"),
             ("Porciones de Torta", "Carrot cake", "Unidad"), ("Porciones de Torta", "Cheesecake frutos rojos", "Unidad"),
             ("Porciones de Torta", "Cheesecake de oreo", "Unidad"),
-            # Pasteleria
             ("Pasteleria", "Pastafrola", "Unidad"), ("Pasteleria", "Milhojas", "Unidad"),
             ("Pasteleria", "Milhojas chicas", "Unidad"), ("Pasteleria", "Tortas de vainilla", "Unidad"),
             ("Pasteleria", "Tortas de vainilla chicas", "Unidad"), ("Pasteleria", "Tortas de chocolate", "Unidad"),
             ("Pasteleria", "Torta de chocolate chicas", "Unidad"), ("Pasteleria", "Tarta Sofi", "Unidad"),
             ("Pasteleria", "Tarta de coco", "Unidad"), ("Pasteleria", "Porcion de pastafrola", "Unidad"),
             ("Pasteleria", "Porcion de milhojas", "Unidad"),
-            # Otros
             ("Otros", "Masitas secas por peso", "Kg"), ("Otros", "Masitas secas en bandeja", "Unidad"),
             ("Otros", "Bombones por peso", "Kg"), ("Otros", "Bombones en bandeja", "Unidad"),
             ("Otros", "Paleta de chocolate", "Unidad")
@@ -246,7 +228,8 @@ if "logged_in" not in st.session_state:
     st.session_state.username = ""
 
 def login(usuario, password):
-    if usuario == "panadería@cafe32" and password == "1234":
+    # Sin tilde para evitar errores al tipear
+    if usuario == "panaderia@cafe32" and password == "1234":
         st.session_state.logged_in = True
         st.session_state.user_role = "empleado"
         st.session_state.username = usuario
@@ -281,7 +264,7 @@ if not st.session_state.logged_in:
         """, unsafe_allow_html=True)
         
         with st.form("login_form"):
-            user_input = st.text_input("Usuario", placeholder="panadería@cafe32 o administrador@cafe32")
+            user_input = st.text_input("Usuario", placeholder="panaderia@cafe32 o administrador@cafe32")
             pass_input = st.text_input("Contraseña", type="password")
             submit_login = st.form_submit_button("Ingresar al Sistema", use_container_width=True)
             
@@ -292,6 +275,8 @@ if not st.session_state.logged_in:
 # ==========================================
 # ENCABEZADO Y MENÚ PRINCIPAL
 # ==========================================
+role_text = "Administrador" if st.session_state.user_role == 'admin' else "Personal de Turno"
+
 st.markdown(f"""
     <div class="header-banner">
         <div class="logo-32-container">
@@ -302,7 +287,7 @@ st.markdown(f"""
             </div>
         </div>
         <div>
-            <span class="role-badge">{'Administrador' : st.session_state.user_role == 'admin' else 'Personal de Turno'}</span>
+            <span class="role-badge">{role_text}</span>
         </div>
     </div>
 """, unsafe_allow_html=True)
@@ -310,7 +295,8 @@ st.markdown(f"""
 with st.sidebar:
     st.markdown(f"**Usuario conectado:** `{st.session_state.username}`")
     st.markdown("---")
-    menu = st.radio("Navegación", ["Planilla Diaria (Turnos)", "Reportes e Historial (Admin)"] if st.session_state.user_role == "admin" else ["Planilla Diaria (Turnos)"])
+    menu_options = ["Planilla Diaria (Turnos)", "Reportes e Historial (Admin)"] if st.session_state.user_role == "admin" else ["Planilla Diaria (Turnos)"]
+    menu = st.radio("Navegación", menu_options)
     st.markdown("---")
     if st.button("Cerrar Sesión", use_container_width=True):
         logout()
