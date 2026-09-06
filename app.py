@@ -2,10 +2,9 @@ import streamlit as st
 import sqlite3
 import pandas as pd
 from datetime import datetime
-import base64
 
 # ==========================================
-# CONFIGURACIÓN DE PÁGINA Y TEMA CAFÉ 32
+# CONFIGURACIÓN DE PÁGINA Y DISEÑO CAFÉ 32
 # ==========================================
 st.set_page_config(
     page_title="CAFÉ 32 - Control de Stock y Panadería",
@@ -59,8 +58,8 @@ CUSTOM_CSS = """
     }
 
     .logo-32-svg {
-        width: 65px;
-        height: 65px;
+        width: 60px;
+        height: 60px;
     }
 
     .header-title-box h1 {
@@ -68,8 +67,7 @@ CUSTOM_CSS = """
         font-weight: 800;
         color: var(--verde-cafe);
         margin: 0;
-        font-size: 24px;
-        letter-spacing: -0.5px;
+        font-size: 22px;
     }
 
     .header-title-box p {
@@ -96,13 +94,10 @@ CUSTOM_CSS = """
         font-family: 'Montserrat', sans-serif !important;
         font-weight: 700 !important;
         padding: 10px 20px !important;
-        transition: all 0.2s ease !important;
     }
 
     .stButton>button:hover {
         background-color: var(--verde-hover) !important;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(29, 51, 40, 0.2);
     }
 
     .role-badge {
@@ -113,13 +108,7 @@ CUSTOM_CSS = """
         font-size: 12px;
         font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
         border: 1px solid rgba(29, 51, 40, 0.15);
-    }
-
-    .dataframe {
-        border-radius: 8px;
-        overflow: hidden;
     }
 
     .section-header {
@@ -137,7 +126,7 @@ CUSTOM_CSS = """
 st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
 
 # ==========================================
-# BASE DE DATOS LOCAL
+# BASE DE DATOS Y CATALOGO
 # ==========================================
 DB_FILE = "cafe32_panaderia.db"
 
@@ -155,47 +144,79 @@ def init_db():
     ''')
     
     c.execute('''
-        CREATE TABLE IF NOT EXISTS turnos (
+        CREATE TABLE IF NOT EXISTS registros_diarios (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             fecha TEXT,
-            hora TEXT,
-            tipo_accion TEXT,
-            empleado TEXT,
-            observaciones TEXT
-        )
-    ''')
-    
-    c.execute('''
-        CREATE TABLE IF NOT EXISTS movimientos (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            fecha TEXT,
-            hora TEXT,
-            empleado TEXT,
+            empleado_apertura TEXT,
+            empleado_cierre TEXT,
             producto TEXT,
             categoria TEXT,
             unidad TEXT,
             ingreso REAL,
             sobrante REAL,
             merma REAL,
-            motivo_merma TEXT
+            motivo_merma TEXT,
+            observaciones TEXT
         )
     ''')
     
     c.execute("SELECT COUNT(*) FROM catalogo")
     if c.fetchone()[0] == 0:
-        productos_iniciales = [
-            ("Panificación por Kg", "Pan", "Kg"),
-            ("Panificación por Kg", "Galleta", "Kg"),
-            ("Panificación por Kg", "Criollos", "Kg"),
-            ("Panificación por Kg", "Chipá", "Kg"),
-            ("Panificación por Unidad", "Pan de molde blanco", "Unidad"),
-            ("Especiales", "Prepizza", "Unidad"),
-            ("Individuales", "Cookies classics", "Unidad"),
-            ("Facturas", "Medialunas de manteca", "Unidad"),
-            ("Porciones de Torta", "Chocotorta", "Unidad"),
-            ("Pastelería", "Pastafrola", "Unidad")
+        items = [
+            # Panificación por Kg
+            ("Panificación", "Pan", "Kg"), ("Panificación", "Galleta", "Kg"),
+            ("Panificación", "Criollos", "Kg"), ("Panificación", "Chipá", "Kg"),
+            ("Panificación", "Cuernitos", "Kg"), ("Panificación", "Bizcochitos", "Kg"),
+            # Panificación por Unidad
+            ("Panificación", "Pan de molde blanco", "Unidad"), ("Panificación", "Pan de molde con semillas", "Unidad"),
+            ("Panificación", "Pinchadas", "Unidad"), ("Panificación", "Pan arabe x4", "Unidad"),
+            ("Panificación", "Pan pebete x4", "Unidad"), ("Panificación", "Pan de hamburguesa x2", "Unidad"),
+            ("Panificación", "Pan de lomita x2", "Unidad"),
+            # Especiales
+            ("Especiales", "Prepizza", "Unidad"), ("Especiales", "Pizzetta", "Unidad"),
+            ("Especiales", "Pebete relleno", "Unidad"), ("Especiales", "Arabe relleno", "Unidad"),
+            ("Especiales", "Medialuna xl", "Unidad"), ("Especiales", "Medialuna xl rellena", "Unidad"),
+            ("Especiales", "Sandwich de miga comun", "Unidad"), ("Especiales", "Sandwich de miga especial", "Unidad"),
+            ("Especiales", "Sandwich de miga con pollo", "Unidad"), ("Especiales", "Panes de molde", "Unidad"),
+            # Cuartos
+            ("Cuartos", "Grisines", "Unidad"), ("Cuartos", "Palmeras", "Unidad"),
+            ("Cuartos", "Pepas", "Unidad"), ("Cuartos", "Fosforitos", "Unidad"), ("Cuartos", "Primaveras", "Unidad"),
+            # Individuales
+            ("Individuales", "Cookies classics", "Unidad"), ("Individuales", "Cookies de doble chocolate", "Unidad"),
+            ("Individuales", "Cookies black", "Unidad"), ("Individuales", "Cookies oreo", "Unidad"),
+            ("Individuales", "Cookies red velvet", "Unidad"), ("Individuales", "Muffins de arandanos", "Unidad"),
+            ("Individuales", "Muffins de vainilla y ddl", "Unidad"), ("Individuales", "Muffins de chocolate", "Unidad"),
+            ("Individuales", "Alfajores marplatenses", "Unidad"), ("Individuales", "Alfajores marplatenses glaseados", "Unidad"),
+            ("Individuales", "Alfajores de cafe", "Unidad"), ("Individuales", "Alfajores de maicena", "Unidad"),
+            ("Individuales", "Alfajores brownie", "Unidad"), ("Individuales", "Alfajores de coco", "Unidad"),
+            ("Individuales", "Brownies", "Unidad"), ("Individuales", "Lemons", "Unidad"), ("Individuales", "Boudin del dia", "Unidad"),
+            # Facturas
+            ("Facturas", "Medialunas de manteca", "Unidad"), ("Facturas", "Medialunas de grasa", "Unidad"),
+            ("Facturas", "Surtidas de manteca", "Unidad"), ("Facturas", "Surtidas de grasa", "Unidad"),
+            ("Facturas", "Churrines-vigilantes", "Unidad"), ("Facturas", "Hojaldres", "Unidad"),
+            ("Facturas", "Pan de leche", "Unidad"), ("Facturas", "Tortillas negras", "Unidad"),
+            ("Facturas", "Rolls de canela", "Unidad"), ("Facturas", "Donas simples", "Unidad"), ("Facturas", "Donas rellenas", "Unidad"),
+            # Porciones de Torta
+            ("Porciones de Torta", "Chocotorta", "Unidad"), ("Porciones de Torta", "Torta vasca", "Unidad"),
+            ("Porciones de Torta", "Key lime pie", "Unidad"), ("Porciones de Torta", "Tiramisu", "Unidad"),
+            ("Porciones de Torta", "Cheesecake", "Unidad"), ("Porciones de Torta", "Matilda", "Unidad"),
+            ("Porciones de Torta", "Selva negra", "Unidad"), ("Porciones de Torta", "Red velvet", "Unidad"),
+            ("Porciones de Torta", "Lemon pie", "Unidad"), ("Porciones de Torta", "Tarta de frutillas", "Unidad"),
+            ("Porciones de Torta", "Carrot cake", "Unidad"), ("Porciones de Torta", "Cheesecake frutos rojos", "Unidad"),
+            ("Porciones de Torta", "Cheesecake de oreo", "Unidad"),
+            # Pasteleria
+            ("Pasteleria", "Pastafrola", "Unidad"), ("Pasteleria", "Milhojas", "Unidad"),
+            ("Pasteleria", "Milhojas chicas", "Unidad"), ("Pasteleria", "Tortas de vainilla", "Unidad"),
+            ("Pasteleria", "Tortas de vainilla chicas", "Unidad"), ("Pasteleria", "Tortas de chocolate", "Unidad"),
+            ("Pasteleria", "Torta de chocolate chicas", "Unidad"), ("Pasteleria", "Tarta Sofi", "Unidad"),
+            ("Pasteleria", "Tarta de coco", "Unidad"), ("Pasteleria", "Porcion de pastafrola", "Unidad"),
+            ("Pasteleria", "Porcion de milhojas", "Unidad"),
+            # Otros
+            ("Otros", "Masitas secas por peso", "Kg"), ("Otros", "Masitas secas en bandeja", "Unidad"),
+            ("Otros", "Bombones por peso", "Kg"), ("Otros", "Bombones en bandeja", "Unidad"),
+            ("Otros", "Paleta de chocolate", "Unidad")
         ]
-        c.executemany("INSERT INTO catalogo (categoria, producto, unidad_medida) VALUES (?, ?, ?)", productos_iniciales)
+        c.executemany("INSERT INTO catalogo (categoria, producto, unidad_medida) VALUES (?, ?, ?)", items)
         
     conn.commit()
     conn.close()
@@ -203,12 +224,8 @@ def init_db():
 init_db()
 
 EMPLEADOS = [
-    "Candela Nasca",
-    "Lucia Crispens",
-    "Israel Cabrera",
-    "Priscila Frick",
-    "Ariana Torres",
-    "Melania Classen"
+    "Candela Nasca", "Lucia Crispens", "Israel Cabrera",
+    "Priscila Frick", "Ariana Torres", "Melania Classen"
 ]
 
 LOGO_32_SVG = """
@@ -221,7 +238,7 @@ LOGO_32_SVG = """
 """
 
 # ==========================================
-# MANEJO DE SESIÓN Y LOGIN
+# GESTIÓN DE SESIÓN
 # ==========================================
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
@@ -233,13 +250,11 @@ def login(usuario, password):
         st.session_state.logged_in = True
         st.session_state.user_role = "empleado"
         st.session_state.username = usuario
-        st.success("¡Bienvenido/a al Panel de Panadería!")
         st.rerun()
     elif usuario == "administrador@cafe32" and password == "cafe32":
         st.session_state.logged_in = True
         st.session_state.user_role = "admin"
         st.session_state.username = usuario
-        st.success("¡Bienvenido/a Administrador!")
         st.rerun()
     else:
         st.error("Usuario o contraseña incorrectos")
@@ -254,19 +269,19 @@ def logout():
 # PANTALLA DE LOGIN
 # ==========================================
 if not st.session_state.logged_in:
-    col1, col2, col3 = st.columns([1, 2, 1])
+    col1, col2, col3 = st.columns([1, 1.5, 1])
     with col2:
-        st.markdown("<br><br>", unsafe_allow_html=True)
+        st.markdown("<br>", unsafe_allow_html=True)
         st.markdown(f"""
-            <div style="text-align: center; background-color: #FAF8F5; padding: 30px; border-radius: 16px; border: 2px solid #E2DDD5; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
+            <div style="text-align: center; background-color: #FAF8F5; padding: 35px; border-radius: 16px; border: 2px solid #E2DDD5; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
                 {LOGO_32_SVG}
-                <h1 style="color: #1D3328; font-family: 'Montserrat', sans-serif; font-weight: 800; margin-top: 15px; margin-bottom: 5px;">CAFÉ 32</h1>
-                <p style="color: #6B7280; font-weight: 600; margin-bottom: 25px;">Sistema Integrado de Control de Stock y Panadería</p>
+                <h1 style="color: #1D3328; font-family: 'Montserrat', sans-serif; font-weight: 800; margin-top: 15px; margin-bottom: 5px; font-size: 26px;">CAFÉ 32</h1>
+                <p style="color: #6B7280; font-weight: 600; font-size: 14px; margin-bottom: 20px;">Control Integral de Panadería & Stock</p>
             </div>
         """, unsafe_allow_html=True)
         
         with st.form("login_form"):
-            user_input = st.text_input("Usuario", placeholder="ej. panadería@cafe32 o administrador@cafe32")
+            user_input = st.text_input("Usuario", placeholder="panadería@cafe32 o administrador@cafe32")
             pass_input = st.text_input("Contraseña", type="password")
             submit_login = st.form_submit_button("Ingresar al Sistema", use_container_width=True)
             
@@ -275,7 +290,7 @@ if not st.session_state.logged_in:
     st.stop()
 
 # ==========================================
-# INTERFAZ PRINCIPAL
+# ENCABEZADO Y MENÚ PRINCIPAL
 # ==========================================
 st.markdown(f"""
     <div class="header-banner">
@@ -283,24 +298,118 @@ st.markdown(f"""
             {LOGO_32_SVG}
             <div class="header-title-box">
                 <h1>CAFÉ 32</h1>
-                <p>Gestión Inteligente de Panadería & Mermas</p>
+                <p>Sistema Operativo de Control Diario</p>
             </div>
         </div>
         <div>
-            <span class="role-badge">{'Administrador' if st.session_state.user_role == 'admin' else 'Empleado de Panadería'}</span>
+            <span class="role-badge">{'Administrador' : st.session_state.user_role == 'admin' else 'Personal de Turno'}</span>
         </div>
     </div>
 """, unsafe_allow_html=True)
 
 with st.sidebar:
-    st.markdown(f"**Usuario:** `{st.session_state.username}`")
+    st.markdown(f"**Usuario conectado:** `{st.session_state.username}`")
+    st.markdown("---")
+    menu = st.radio("Navegación", ["Planilla Diaria (Turnos)", "Reportes e Historial (Admin)"] if st.session_state.user_role == "admin" else ["Planilla Diaria (Turnos)"])
     st.markdown("---")
     if st.button("Cerrar Sesión", use_container_width=True):
         logout()
 
-if st.session_state.user_role == "empleado":
-    st.markdown("<div class='section-header'>MÓDULO DE EMPLEADOS</div>", unsafe_allow_html=True)
-    st.info("Funciones de empleado activas.")
-elif st.session_state.user_role == "admin":
-    st.markdown("<div class='section-header'>PANEL DE CONTROL ADMINISTRATIVO</div>", unsafe_allow_html=True)
-    st.info("Funciones de administrador activas.")
+# ==========================================
+# MÓDULO 1: PLANILLA DIARIA (APERTURA Y CIERRE)
+# ==========================================
+if menu == "Planilla Diaria (Turnos)":
+    st.markdown("<div class='section-header'>PLANILLA DE CONTROL DIARIO</div>", unsafe_allow_html=True)
+    
+    col_f1, col_f2 = st.columns(2)
+    with col_f1:
+        fecha_actual = st.date_input("Fecha de Control", value=datetime.today())
+    with col_f2:
+        modo_turno = st.selectbox("Momento del Registro", ["Apertura de Turno (Ingresos)", "Cierre de Turno (Sobrantes & Mermas)"])
+    
+    conn = sqlite3.connect(DB_FILE)
+    df_cat = pd.read_sql("SELECT * FROM catalogo", conn)
+    conn.close()
+    
+    categorias = df_cat['categoria'].unique()
+    cat_seleccionada = st.selectbox("Filtrar por Categoría", categorias)
+    
+    productos_filtrados = df_cat[df_cat['categoria'] == cat_seleccionada]
+    
+    with st.form("form_turno"):
+        if "Apertura" in modo_turno:
+            st.subheader("Registro de Ingresos de Mercadería (Inicio)")
+            emp_apertura = st.selectbox("Empleado que Abre", EMPLEADOS)
+            
+            ingresos_input = {}
+            for idx, row in productos_filtrados.iterrows():
+                ingresos_input[row['producto']] = st.number_input(f"Ingreso de {row['producto']} ({row['unidad_medida']})", min_value=0.0, step=0.5)
+            
+            obs = st.text_area("Observaciones de Apertura")
+            submitted = st.form_submit_button("Guardar Apertura", use_container_width=True)
+            
+            if submitted:
+                conn = sqlite3.connect(DB_FILE)
+                c = conn.cursor()
+                for prod, cant in ingresos_input.items():
+                    unidad = productos_filtrados[productos_filtrados['producto'] == prod]['unidad_medida'].values[0]
+                    c.execute("""
+                        INSERT INTO registros_diarios (fecha, empleado_apertura, producto, categoria, unidad, ingreso, sobrante, merma, observaciones)
+                        VALUES (?, ?, ?, ?, ?, ?, 0, 0, ?)
+                    """, (str(fecha_actual), emp_apertura, prod, cat_seleccionada, unidad, cant, obs))
+                conn.commit()
+                conn.close()
+                st.success("¡Ingresos de apertura guardados correctamente!")
+        
+        else:
+            st.subheader("Registro de Cierre, Sobrantes y Mermas (Fin de Turno)")
+            emp_cierre = st.selectbox("Empleado que Cierra", EMPLEADOS)
+            
+            cierre_data = {}
+            for idx, row in productos_filtrados.iterrows():
+                st.markdown(f"**{row['producto']} ({row['unidad_medida']})**")
+                c1, c2, c3 = st.columns(3)
+                with c1:
+                    sob = st.number_input(f"Sobrante {row['producto']}", min_value=0.0, step=0.5, key=f"sob_{row['producto']}")
+                with c2:
+                    mer = st.number_input(f"Merma {row['producto']}", min_value=0.0, step=0.5, key=f"mer_{row['producto']}")
+                with c3:
+                    mot = st.text_input(f"Motivo merma {row['producto']}", placeholder="Caído, roto, etc.", key=f"mot_{row['producto']}")
+                cierre_data[row['producto']] = (sob, mer, mot)
+            
+            obs_cierre = st.text_area("Observaciones Generales de Cierre")
+            submitted_cierre = st.form_submit_button("Guardar Cierre y Calcular", use_container_width=True)
+            
+            if submitted_cierre:
+                conn = sqlite3.connect(DB_FILE)
+                c = conn.cursor()
+                for prod, data in cierre_data.items():
+                    c.execute("""
+                        UPDATE registros_diarios 
+                        SET empleado_cierre = ?, sobrante = ?, merma = ?, motivo_merma = ?, observaciones = ?
+                        WHERE fecha = ? AND producto = ?
+                    """, (emp_cierre, data[0], data[1], data[2], obs_cierre, str(fecha_actual), prod))
+                conn.commit()
+                conn.close()
+                st.success("¡Cierre registrado y mermas calculadas exitosamente!")
+
+# ==========================================
+# MÓDULO 2: REPORTES ADMINISTRATIVOS
+# ==========================================
+elif menu == "Reportes e Historial (Admin)" and st.session_state.user_role == "admin":
+    st.markdown("<div class='section-header'>REPORTES Y CONTROL ADMINISTRATIVO TOTAL</div>", unsafe_allow_html=True)
+    
+    conn = sqlite3.connect(DB_FILE)
+    df_reg = pd.read_sql("SELECT * FROM registros_diarios", conn)
+    conn.close()
+    
+    if not df_reg.empty:
+        filtro_fecha = st.date_input("Seleccionar Fecha de Reporte", value=datetime.today())
+        df_filtrado = df_reg[df_reg['fecha'] == str(filtro_fecha)]
+        
+        if not df_filtrado.empty:
+            st.dataframe(df_filtrado[['fecha', 'empleado_apertura', 'empleado_cierre', 'categoria', 'producto', 'unidad', 'ingreso', 'sobrante', 'merma', 'motivo_merma', 'observaciones']], use_container_width=True)
+        else:
+            st.info("No hay registros cargados para la fecha seleccionada.")
+    else:
+        st.info("Aún no existen registros guardados en el sistema.")
